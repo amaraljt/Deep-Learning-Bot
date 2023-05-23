@@ -1,1 +1,1 @@
-# discordBot
+# austin-GPT
