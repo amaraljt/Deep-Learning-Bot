@@ -1,72 +1,32 @@
 import discord
+import os
 from discord.ext import commands
 import random
+import openai
+
+openai.organization = os.getenv("OPENAI_ORG")
+openai.api_key = os.getenv("OPENAI_API_KEY")
+print(openai.Model.list())
 
 intents=discord.Intents.all()
 
-bot = commands.Bot(command_prefix="$", intents=intents)
+client = commands.Bot(command_prefix="$", intents=intents)
 
-@bot.event
+@client.event
 async def on_ready():
-    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
+    print(f'Logged in as {client.user} (ID: {client.user.id})')
 
-
-@bot.event
+# --------------
+# OpenAI API
+# --------------
+@client.event
 async def on_message(message):
-    if message.author == bot.user:
-        return
-
-    if message.content.startswith('$coke'):
-        await message.channel.send('Coke > Water no stack on a cap BrUH yer')
-
-    if message.content.startswith('cs?'):
-        await message.channel.send('god ur so cringe')
+        if(message.author.bot):
+            return
         
-@bot.command()
-async def roll(ctx, dice: str):
-    """Rolls a dice in NdN format."""
-    try:
-        rolls, limit = map(int, dice.split('d'))
-    except Exception:
-        await ctx.send('Format has to be in NdN!')
-        return
-
-    result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
-    await ctx.send(result)
+        print(message.author + ": " + message.content)
+        gpt_response = openai.Completion.create(model="text-davinci-003", prompt=message.content, temperature=0, max_tokens=50)
+        await message.channel.send(gpt_response['choices'][0]['text'])
 
 
-@bot.command(description='For when you wanna settle the score some other way')
-async def choose(ctx, *choices: str):
-    """Chooses between multiple choices."""
-    await ctx.send(random.choice(choices))
-
-
-@bot.command()
-async def repeat(ctx, times: int, content='repeating...'):
-    """Repeats a message multiple times."""
-    for i in range(times):
-        await ctx.send(content)
-
-
-@bot.command()
-async def joined(ctx, member: discord.Member):
-    """Says when a member joined."""
-    await ctx.send(f'{member.name} joined {discord.utils.format_dt(member.joined_at)}')
-
-
-@bot.group()
-async def cool(ctx):
-    """Says if a user is cool.
-    In reality this just checks if a subcommand is being invoked.
-    """
-    if ctx.invoked_subcommand is None:
-        await ctx.send(f'No, {ctx.subcommand_passed} is not cool')
-
-
-@cool.command(name='bot')
-async def _bot(ctx):
-    """Is the bot cool?"""
-    await ctx.send('Yes, the bot is cool.')
-
-
-bot.run('MTA5NjIwMTAzMTExMDY0MzgxNA.GH3P24.U3F4Y3vghtL3U2kfH5axxHnGUWdzy1YunSv5fs')
+client.run(os.getenv('DISCORD_TOKEN'))
