@@ -160,4 +160,24 @@ cython_debug/
 #.idea/
 
 # Parquet Data Files
-.parquet
+*.parquet
+*.class
+.project
+.classpath
+.settings
+target
+# Package Files #
+*.jar
+*.war
+*.ear
+*.iml
+*.ipr
+*.iws
+*.orig
+*.rej
+dependency-reduced-pom.xml
+.idea/*
+target/
+.cache
+*~
+mvn_install.log
